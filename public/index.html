@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Go WASM Button Example</title>
+  <script src="wasm_exec.js"></script>
+  <style>
+    #btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+
+<body>
+  <p id="count">0</p>
+  <button id="btn">Click me</button>
+  <script>
+    const go = new Go();
+
+    WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+      go.run(result.instance);
+    });
+
+    document.getElementById("btn").addEventListener("click", () => {
+      logMessage();
+    });
+  </script>
+</body>
+
+</html>
