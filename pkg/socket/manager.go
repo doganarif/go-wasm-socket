@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Pre-configure the upgrader, which is responsible for upgrading
+// an HTTP connection to a WebSocket connection.
 var (
 	websocketUpgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -16,11 +18,16 @@ var (
 	}
 )
 
+// NotifyEvent represents an event that contains a reference
+// to the client who initiated the event and the message to be notified.
 type NotifyEvent struct {
 	client  *Client
 	message string
 }
 
+// Client represents a single WebSocket connection.
+// It holds the client's ID, the WebSocket connection itself, and
+// the manager that controls all clients.
 type Client struct {
 	id         uint32
 	connection *websocket.Conn
@@ -29,6 +36,7 @@ type Client struct {
 	writeChan chan string
 }
 
+// Manager keeps track of all active clients and broadcasts messages.
 type Manager struct {
 	clients ClientList
 
@@ -37,8 +45,11 @@ type Manager struct {
 	notifyChan chan NotifyEvent
 }
 
+// ClientList is a map of clients to keep track of their presence.
 type ClientList map[*Client]bool
 
+// NewClient creates a new Client instance with a unique ID, its connection,
+// and a reference to the Manager.
 func NewClient(conn *websocket.Conn, manager *Manager) *Client {
 	return &Client{
 		id:         rand.Uint32(),
@@ -48,6 +59,8 @@ func NewClient(conn *websocket.Conn, manager *Manager) *Client {
 	}
 }
 
+// readMessages continuously reads messages from the WebSocket connection.
+// It will send any received messages to the manager's notification channel.
 func (c *Client) readMessages() {
 	defer func() {
 		c.manager.removeClient(c)
@@ -69,6 +82,8 @@ func (c *Client) readMessages() {
 	}
 }
 
+// writeMessages listens on the client's write channel for messages
+// and writes any received messages to the WebSocket connection.
 func (c *Client) writeMessages() {
 	defer func() {
 		c.manager.removeClient(c)
@@ -82,6 +97,8 @@ func (c *Client) writeMessages() {
 	}
 }
 
+// NewManager creates a new Manager instance, initializes the client list,
+// and starts the goroutine responsible for notifying other clients.
 func NewManager() *Manager {
 	m := &Manager{
 		clients:    make(ClientList),
@@ -93,6 +110,7 @@ func NewManager() *Manager {
 	return m
 }
 
+// otherClients returns a slice of clients excluding the provided client.
 func (m *Manager) otherClients(client *Client) []*Client {
 	clientList := make([]*Client, 0)
 
@@ -105,6 +123,8 @@ func (m *Manager) otherClients(client *Client) []*Client {
 	return clientList
 }
 
+// notifyOtherClients waits for notify events and broadcasts the message
+// to all clients except the one who sent the message.
 func (m *Manager) notifyOtherClients() {
 	for {
 		select {
@@ -118,6 +138,7 @@ func (m *Manager) notifyOtherClients() {
 	}
 }
 
+// addClient adds a new client to the manager's client list.
 func (m *Manager) addClient(client *Client) {
 	m.Lock()
 	defer m.Unlock()
@@ -125,6 +146,8 @@ func (m *Manager) addClient(client *Client) {
 	m.clients[client] = true
 }
 
+// removeClient removes a client from the manager's client list and
+// closes the WebSocket connection.
 func (m *Manager) removeClient(client *Client) {
 	m.Lock()
 	defer m.Unlock()
@@ -135,6 +158,8 @@ func (m *Manager) removeClient(client *Client) {
 	}
 }
 
+// ServeWS is an HTTP handler that upgrades the HTTP connection to a
+// WebSocket connection and registers the new client with the manager.
 func (m *Manager) ServeWS(w http.ResponseWriter, r *http.Request) {
 	log.Println("New Connection")
 
