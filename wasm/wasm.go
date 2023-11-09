@@ -34,8 +34,8 @@ func main() {
 	// Establish a new WebSocket connection.
 	conn := NewConn()
 
-	// Register the logMessage function in the global JavaScript context.
-	js.Global().Set("logMessage", logMessageFunc(conn))
+	// Register the onButtonClick function in the global JavaScript context.
+	js.Global().Set("onButtonClick", onButtonClickFunc(conn))
 
 	// Start reading messages in a new goroutine.
 	go conn.readMessage()
@@ -44,8 +44,8 @@ func main() {
 	<-c
 }
 
-// logMessageFunc returns a js.Func that sends a "HELLO" message over WebSocket when invoked.
-func logMessageFunc(conn *Conn) js.Func {
+// onButtonClickFunc returns a js.Func that sends a "HELLO" message over WebSocket when invoked.
+func onButtonClickFunc(conn *Conn) js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		println("Button Clicked!")
 		// Send a message through the WebSocket connection.
@@ -87,7 +87,7 @@ func updateDOMContent(text string) {
 	// Get the document object from the global JavaScript context.
 	document := js.Global().Get("document")
 	// Get the DOM element by its ID.
-	element := document.Call("getElementById", "count")
+	element := document.Call("getElementById", "text")
 	// Set the innerText of the element to the provided text.
 	element.Set("innerText", text)
 }

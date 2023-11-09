@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/doganarif/wasm/2/pkg/socket"
+	"github.com/doganarif/go-wasm-socket/pkg/socket"
 )
 
 func main() {
