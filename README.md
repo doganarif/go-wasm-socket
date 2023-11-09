@@ -5,3 +5,5 @@ This project demonstrates how to set up a WebAssembly (WASM) module using Go, wi
 ## Introduction
 
 WebAssembly allows you to run code written in multiple languages on the web at near-native speed, with client-side execution. This project specifically showcases the use of Go to handle WebSocket communications and update the DOM accordingly.
+
+| Related Blog Post : https://arifdogan.medium.com/creating-real-time-websockets-with-go-and-webassembly-c4039ff2d0ec
